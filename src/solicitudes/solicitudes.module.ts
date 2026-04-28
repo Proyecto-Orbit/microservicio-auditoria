@@ -19,7 +19,7 @@ import { UsuarioEspejoRepository } from './accesoDatos/repositories/usuario-espe
         transport: Transport.RMQ,
         options: {
           urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
-          queue: 'colaAprobacionesJAC',
+          queue: 'colaAprobacionesAsocomunal',
           queueOptions: {
             durable: false,
           },
@@ -29,10 +29,10 @@ import { UsuarioEspejoRepository } from './accesoDatos/repositories/usuario-espe
   ],
   controllers: [SolicitudesController, ConsumidorUsuariosController],
   providers: [
-    SolicitudesService, 
-    ProductorEventosService, 
-    SolicitudRepository, 
+    SolicitudesService,
+    ProductorEventosService,
+    SolicitudRepository,
     UsuarioEspejoRepository
   ],
 })
-export class SolicitudesModule {}
+export class SolicitudesModule { }
