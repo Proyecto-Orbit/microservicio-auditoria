@@ -25,6 +25,17 @@ import { UsuarioEspejoRepository } from './accesoDatos/repositories/usuario-espe
           },
         },
       },
+      {
+        name: 'RABBITMQ_JAC_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+          queue: 'colaAprobacionesJAC',
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
     ]),
   ],
   controllers: [SolicitudesController, ConsumidorUsuariosController],
