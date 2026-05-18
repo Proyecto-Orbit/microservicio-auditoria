@@ -38,10 +38,12 @@ export class SolicitudRepository {
   async crearNueva(
     crearSolicitudDto: CrearSolicitudDto,
     operadorId: string,
+    operadorNombre?: string,
   ): Promise<SolicitudCambio> {
     const nueva = this.repo.create({
       ...crearSolicitudDto,
       operadorId,
+      operadorNombre: operadorNombre ?? operadorId, // fallback al ID si no hay nombre
       estado: EstadoSolicitud.PENDIENTE,
     });
     return this.guardar(nueva);

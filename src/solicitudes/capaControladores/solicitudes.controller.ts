@@ -7,30 +7,34 @@ import type { JwtPayload } from '../../auth/guards/jwt-cookie.guard';
 import { UsuarioActivo } from '../../auth/decorators/usuario-activo.decorator';
 import { RechazarSolicitudDto } from '../accesoDatos/rechazar-solicitud.dto';
 import { AllowRoles } from '../../auth/decorators/allow-roles.decorator';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 
+@ApiTags('solicitudes')
 @Controller('solicitudes')
 @UseGuards(JwtCookieGuard)
 export class SolicitudesController {
   constructor(private readonly solicitudesService: SolicitudesService) {}
 
-  // HU-6.5: Registrar una solicitud de cambio (Operador)
+  @ApiOperation({ summary: 'Registrar una nueva propuesta de cambio (Operador)' })
+  @ApiResponse({ status: 201, description: 'Solicitud creada exitosamente.' })
   @AllowRoles('operador')
   @Post()
   crearSolicitud(
     @Body() crearDto: CrearSolicitudDto,
     @UsuarioActivo() usuario: JwtPayload,
   ) {
-    return this.solicitudesService.crearSolicitud(crearDto, usuario.email);
+    return this.solicitudesService.crearSolicitud(crearDto, usuario.email, usuario.nombre);
   }
 
-  // HU-6.6: Consultar mis solicitudes (Operador)
+  @ApiOperation({ summary: 'Consultar solicitudes propias (Operador)' })
   @AllowRoles('operador')
   @Get('mias')
   listarMias(@UsuarioActivo() usuario: JwtPayload) {
     return this.solicitudesService.listarPorOperador(usuario.email);
   }
 
-  // HU-6.1 y HU-6.4: Listar todas las solicitudes (Admin)
+  @ApiOperation({ summary: 'Listar todas las solicitudes con filtro opcional (Admin)' })
+  @ApiQuery({ name: 'estado', enum: EstadoSolicitud, required: false })
   @AllowRoles('admin')
   @Get()
   listarTodas(
@@ -39,17 +43,18 @@ export class SolicitudesController {
     return this.solicitudesService.listarTodas(estado);
   }
 
-  // HU-6.2: Aprobar un cambio (Admin)
+  @ApiOperation({ summary: 'Aprobar una solicitud de cambio (Admin)' })
+  @ApiResponse({ status: 200, description: 'Cambio aprobado y evento emitido a RabbitMQ.' })
   @AllowRoles('admin')
   @Patch(':id/aprobar')
   aprobarSolicitud(
     @Param('id') id: string,
     @UsuarioActivo() usuario: JwtPayload,
   ) {
-    return this.solicitudesService.aprobarSolicitud(id, usuario.email);
+    return this.solicitudesService.aprobarSolicitud(id, usuario.email, usuario.nombre);
   }
 
-  // HU-6.3: Rechazar un cambio (Admin)
+  @ApiOperation({ summary: 'Rechazar una solicitud de cambio (Admin)' })
   @AllowRoles('admin')
   @Patch(':id/rechazar')
   rechazarSolicitud(
@@ -57,16 +62,17 @@ export class SolicitudesController {
     @Body() rechazoDto: RechazarSolicitudDto,
     @UsuarioActivo() usuario: JwtPayload,
   ) {
-    return this.solicitudesService.rechazarSolicitud(id, rechazoDto.motivo, usuario.email);
+    return this.solicitudesService.rechazarSolicitud(id, rechazoDto.motivo, usuario.email, usuario.nombre);
   }
 
-  // Auditoría: Registrar acción directa del Admin como log (estado = APROBADA automáticamente)
+  @ApiOperation({ summary: 'Registrar una acción directa como log de auditoría (Admin)' })
+  @ApiResponse({ status: 201, description: 'Log de acción directa registrado como APROBADO.' })
   @AllowRoles('admin')
   @Post('accion-directa')
   registrarAccionAdmin(
     @Body() crearDto: CrearSolicitudDto,
     @UsuarioActivo() usuario: JwtPayload,
   ) {
-    return this.solicitudesService.registrarAccionAdmin(crearDto, usuario.email);
+    return this.solicitudesService.registrarAccionAdmin(crearDto, usuario.email, usuario.nombre);
   }
 }

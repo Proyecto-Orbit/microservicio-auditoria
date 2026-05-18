@@ -20,7 +20,10 @@ export class SolicitudCambio {
   estado: EstadoSolicitud;
 
   @Column({ type: 'varchar', length: 100 })
-  operadorId: string; // Quien hace la solicitud
+  operadorId: string; // Email/ID de quien hace la solicitud
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  operadorNombre: string; // Nombre legible extraído del JWT
 
   @ManyToOne(() => UsuarioEspejo, { createForeignKeyConstraints: false })
   @JoinColumn({ name: 'operadorId' })
@@ -46,7 +49,10 @@ export class SolicitudCambio {
   motivoRechazo: string; // Se llena si un admin rechaza la solicitud
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  revisadoPorAdminId: string; // ID del Admin que la aprobó o la rechazó
+  revisadoPorAdminId: string; // Email/ID del Admin que la aprobó o la rechazó
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  revisadoPorAdminNombre: string; // Nombre legible del Admin
 
   @CreateDateColumn()
   fechaCreacion: Date;
