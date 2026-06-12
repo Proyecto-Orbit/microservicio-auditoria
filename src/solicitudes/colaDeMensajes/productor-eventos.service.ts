@@ -11,15 +11,18 @@ export class ProductorEventosService {
   /**
    * Emite un evento a RabbitMQ para que el microservicio correspondiente lo aplique.
    * Enruta automáticamente al cliente correcto según la entidad:
-   * - 'JAC' → cola colaAsocomunales (backend de JACs)
-   * - Otras  → cola colaAprobacionesAsocomunal (MS Asocomunales)
+   * - 'JAC' y 'AFILIADO' → cola colaAprobacionesJAC (jac-backend, que también gestiona afiliados)
+   * - Otras             → cola colaAprobacionesAsocomunal (MS Asocomunales)
    *
-   * @param entidad 'JAC', 'ASOCOMUNAL', etc.
+   * @param entidad 'JAC', 'AFILIADO', 'ASOCOMUNAL', etc.
    * @param payload Datos de la entidad.
    */
   emitirAprobacionAplicar(entidad: string, payload: any) {
     const patron = `solicitud.aprobada.${entidad.toLowerCase()}`;
-    const client = entidad.toUpperCase() === 'JAC' ? this.clientJac : this.clientAsocomunal;
+    // jac-backend es responsable tanto de las JAC como de los afiliados (personas).
+    const entidadUpper = entidad.toUpperCase();
+    const loAplicaJacBackend = entidadUpper === 'JAC' || entidadUpper === 'AFILIADO';
+    const client = loAplicaJacBackend ? this.clientJac : this.clientAsocomunal;
 
     console.log(`[RabbitMQ] Emitiendo evento ${patron}...`);
     return client.emit(patron, payload).subscribe({
